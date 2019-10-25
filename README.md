@@ -224,18 +224,20 @@ A sample call we used is below:
 The damage classification training processing and training code can be found under `/path/to/xView2/model/` 
 
 You will need to run the `process_data.py` python script to extract the polygon images used for training, testing, and holdout from the original satellite images and the polygon labels produced by SpaceNet. This will generate a csv file with polygon UUID and damage type
-as well as extracting the actual polygons from the original satellite images. 
+as well as extracting the actual polygons from the original satellite images. If the `val_split_pct` is defined, then you will get two csvfiles, one for test and one for train. 
 
 **Note** The process_data script only extracts polygons from post disaster images
 
 ```
-usage: python process_data [-h] --input_dir --output_dir
+usage: python process_data [-h] --input_dir --output_dir --output_dir_csv [--val_split_pct]
 
 arguments:
 
 -h                                     show help message and exit
---input_dir                            path to xBD data already split into train, test, and hold
---output_dir                           existing path to an output directory that has empty folders for train, test, and hold 
+--input_dir                            path to xBD data
+--output_dir                           existing path to an output directory
+--output_dir_csv                       path to where you want train.csv and test.csv to be saved
+--val_split_pct                        a decimal number between 0.0 and 1.0 for the split percentage in validation set
 
 ```
 

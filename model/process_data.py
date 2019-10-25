@@ -1,18 +1,21 @@
-#####################################################################################################################################################################
-# xView2                                                                                                                                                            #
-# Copyright 2019 Carnegie Mellon University.                                                                                                                        #
-# NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO    #
-# WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY,          # 
-# EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, # 
-# TRADEMARK, OR COPYRIGHT INFRINGEMENT.                                                                                                                             #
-# Released under a MIT (SEI)-style license, please see LICENSE.md or contact permission@sei.cmu.edu for full terms.                                                 #
-# [DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see Copyright notice for non-US Government use  #
-# and distribution.                                                                                                                                                 #
-# This Software includes and/or makes use of the following Third-Party Software subject to its own license:                                                         #
-# 1. SpaceNet (https://github.com/motokimura/spacenet_building_detection/blob/master/LICENSE) Copyright 2017 Motoki Kimura.                                         #
-# DM19-0988                                                                                                                                                         #
-#####################################################################################################################################################################
+"""
+xView2
+Copyright 2019 Carnegie Mellon University. All Rights Reserved.
 
+NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS"
+BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER
+INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED
+FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM
+FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+
+Released under a MIT (SEI)-style license, please see license.txt or contact permission@sei.cmu.edu for full terms.
+This material has been approved for public release and unlimited distribution.
+Please see Copyright notice for non-US Government use and distribution.
+
+This Software includes and/or makes use of the following Third-Party Software subject to its own license:
+1. Matterport/Mask_RCNN - MIT Copyright 2017 Matterport, Inc.
+   https://github.com/matterport/Mask_RCNN/blob/master/LICENSE
+"""
 from PIL import Image
 import time
 import numpy as np
@@ -31,7 +34,7 @@ import shapely.wkt
 import shapely
 from shapely.geometry import Polygon
 from collections import defaultdict
-
+from sklearn.model_selection import train_test_split
 logging.basicConfig(level=logging.INFO)
 
 # Configurations
@@ -58,13 +61,12 @@ def process_img(img_array, polygon_pts, scale_pct):
                 polygon_pts (array): corners of the building polygon.
 
             Returns:
-                numpy array: extracted polygon image from img_array.
+                numpy array: .
 
     """
 
     height, width, _ = img_array.shape
 
-    #Find the four corners of the polygon
     xcoords = polygon_pts[:, 0]
     ycoords = polygon_pts[:, 1]
     xmin, xmax = np.min(xcoords), np.max(xcoords)
@@ -82,7 +84,7 @@ def process_img(img_array, polygon_pts, scale_pct):
     return img_array[ymin:ymax, xmin:xmax, :]
 
 
-def process_data(input_path, output_path, data_type):
+def process_data(input_path, output_path, output_csv_path, val_split_pct):
     """Process Raw Data into
 
         Args:
@@ -98,20 +100,15 @@ def process_data(input_path, output_path, data_type):
     x_data = []
     y_data = []
 
-    #Generate all the image paths
-    data_path = os.path.join(input_path, data_type)
-    disasters = [folder for folder in os.listdir(data_path) if not folder.startswith('.') and ('midwest') not in folder]
-    disaster_paths = ([data_path + "/" +  d + "/images" for d in disasters])
+    disasters = [folder for folder in os.listdir(input_path) if not folder.startswith('.') and ('midwest') not in folder]
+    disaster_paths = ([input_path + "/" +  d + "/images" for d in disasters])
     image_paths = []
     image_paths.extend([(disaster_path + "/" + pic) for pic in os.listdir(disaster_path)] for disaster_path in disaster_paths)
     img_paths = np.concatenate(image_paths)
 
-    #Process each image
     for img_path in tqdm(img_paths):
 
         img_obj = Image.open(img_path)
-
-        #Applies histogram equalization to image
         img_array = np.array(img_obj)
 
         #Get corresponding label for the current image
@@ -119,13 +116,12 @@ def process_data(input_path, output_path, data_type):
         label_file = open(label_path)
         label_data = json.load(label_file)
 
-        #Find all polygons in a given image
         for feat in label_data['features']['xy']:
 
             # only images post-disaster will have damage type
             try:
                 damage_type = feat['properties']['subtype']
-            except: # pre-disaster damage is default no-damage, skip it
+            except: # pre-disaster damage is default no-damage
                 damage_type = "no-damage"
                 continue
 
@@ -133,20 +129,28 @@ def process_data(input_path, output_path, data_type):
 
             y_data.append(damage_intensity_encoding[damage_type])
 
-            # Extract the polygon from the points given
             polygon_geom = shapely.wkt.loads(feat['wkt'])
             polygon_pts = np.array(list(polygon_geom.exterior.coords))
             poly_img = process_img(img_array, polygon_pts, 0.8)
-
-            # Write out the polygon in its own image
-            output_data_path = os.path.join(output_path, data_type)
-            cv2.imwrite(output_data_path + "/" + poly_uuid, poly_img)
+            cv2.imwrite(output_path + "/" + poly_uuid, poly_img)
             x_data.append(poly_uuid)
     
-    data_array = {'uuid': x_data, 'labels': y_data}
-    df = pd.DataFrame(data = data_array)
-    df.to_csv(data_type + ".csv")
-    return df
+    output_train_csv_path = os.path.join(output_csv_path, "train.csv")
+
+    if(val_split_pct > 0):
+       x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=val_split_pct)
+       data_array_train = {'uuid': x_train, 'labels': y_train}
+       data_array_test = {'uuid': x_test, 'labels': y_test}
+       output_test_csv_path = os.path.join(output_csv_path, "test.csv")
+       df_train = pd.DataFrame(data_array_train)
+       df_test = pd.DataFrame(data_array_test)
+       df_train.to_csv(output_train_csv_path)
+       df_test.to_csv(output_test_csv_path)
+    else: 
+       data_array = {'uuid': x_data, 'labels': y_data}
+       df = pd.DataFrame(data = data_array)
+       df.to_csv(output_train_csv_path)
+    
 
 def main():
 
@@ -159,20 +163,21 @@ def main():
                         required=True,
                         metavar='/path/to/xBD_output',
                         help="Path to new directory to save images")
-
+    parser.add_argument('--output_dir_csv',
+                        required=True,
+                        metavar='/path/to/xBD_output_csv',
+                        help="Path to new directory to save csv")
+    parser.add_argument('--val_split_pct', 
+                        required=False,
+                        default=0.0,
+                        metavar='Percentage to split validation',
+                        help="Percentage to split ")
     args = parser.parse_args()
 
-    logging.info("Started Processing for Train Data")
-    process_data(args.input_dir, args.output_dir, 'train')
-    logging.info("Finished Processing Train Data")
+    logging.info("Started Processing for Data")
+    process_data(args.input_dir, args.output_dir, args.output_dir_csv, float(args.val_split_pct))
+    logging.info("Finished Processing Data")
 
-    logging.info("Started Processing Test Data")
-    process_data(args.input_dir, args.output_dir, 'test')
-    logging.info("Finished Processing Test Data")
-
-    logging.info("Started Processing Holdout Data")
-    process_data(args.input_dir, args.output_dir, 'hold')
-    logging.info("Finished Processing Holdout Data")
 
 if __name__ == '__main__':
     main()
