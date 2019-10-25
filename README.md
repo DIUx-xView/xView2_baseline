@@ -21,7 +21,7 @@ xView2 is a challenge set forth by [DIU](https://diu.mil) for assessing damaged 
 
 ## xBD
 
-xBD is the name of the dataset that was generated for this challenge. The dataset contains over 20,000KM<sup>2</sup> of polygon labeled pre and post disaster imagery. The dataset provides the post-disaster imagery with transposed polygons from pre over the buildings, with damage classification labels. See the [xBD paper](http://openaccess.thecvf.com/content_CVPRW_2019/papers/cv4gc/Gupta_Creating_xBD_A_Dataset_for_Assessing_Building_Damage_from_Satellite_CVPRW_2019_paper.pdf) for more information.  
+xBD is the name of the dataset that was generated for this challenge. The dataset contains over 45,000KM<sup>2</sup> of polygon labeled pre and post disaster imagery. The dataset provides the post-disaster imagery with transposed polygons from pre over the buildings, with damage classification labels. See the [xBD paper](http://openaccess.thecvf.com/content_CVPRW_2019/papers/cv4gc/Gupta_Creating_xBD_A_Dataset_for_Assessing_Building_Damage_from_Satellite_CVPRW_2019_paper.pdf) for more information.  
 
 # CMU SEI Baseline Submission 
 
@@ -171,7 +171,7 @@ The original images and labels are preserved in the `./xBD/org/$DISASTER/` direc
 
 #### Training the SpaceNet Model
 
-Now you will be ready to start training a model (based off our provided [weights](put path to release weights here), or from a baseline).
+Now you will be ready to start training a model (based off our provided [weights](https://github.com/DIUx-xView/xview2-baseline/releases/tag/v1.0), or from a baseline).
 
 Using the `spacenet` model we forked, you can control all of the options via command line calls.
 
@@ -292,21 +292,25 @@ The submission [Dockerfile](./submission/Dockerfile) wraps the above inference s
 
 To simplify the creation of the docker follow these steps: 
 1. Ensure Docker is installed and running (with the ability to have ~8GB of RAM)
-2. Move a directory above this repository
-3. Build by calling `$ docker build -t cmu-xview2-baseline -f /path/to/xView2/submission/Dockerfile .` 
+2. move into the `xview2-baseline/submission/` folder
+3. Build by calling `$ docker build -t cmu-xview2-baseline .` 
 
-This will build the image (based off Ubuntu Docker baseline) and add in the repository. 
+This will build the image (based off Ubuntu Docker baseline) and add in the repository and published weight files from the public git. 
 
-**WARNING**: The docker image downloads some files (ResNet etc.) be sure to be off a VPN or give the Docker daemon access to the local network environment for network requests. 
+**WARNING**: The docker image downloads some files (CMU xView2 baseline code, weights, ResNet etc.) be sure to be off a VPN or give the Docker daemon access to the local network environment for network requests. 
 
 Running the image will need a directory for the files, and an output directory to write to. Below is a sample call to run the inference docker image for submission (this will output two of the same output files for scoring (scoring is done at the localization and classification stages, but we output the file at the end and would use the same polygons found in the localization stage anyways). 
 
 
 `$ docker run -v /local/path/to/xBD/folder/with/images/:/submission/ -v /local/path/to/output/scoring/files/:/output/ cmu-xview2-baseline /submission/path/to/pre_image.png /submission/path/to/post_image.png /output/localization_output_name.png /output/classification_output_name.png`
 
+A more specific example would be: 
+
+`$ docker run -v ~/Downloads/xBD/:/submission/ -v ~/Downloads/xBD/:/output/ cmu-xview2-baseline /submission/guatemala-volcano/images/guatemala-volcano_00000023_pre_disaster.png /submission/guatemala-volcano/images/guatemala-volcano_00000023_post_disaster.png /output/test/loc.png /output/test/dmg.png`
+
 ### Output 
 
-The output will be a grey scale PNG with the following pixel values: 
+The output will be two identical grey scale PNG with the following pixel values: 
 
 ```
 0 for no building 
@@ -320,5 +324,5 @@ See the code we use to translate the json outputs to this submission image [infe
 
 ## Contact 
 
-See the [xView2 FAQ]() page first, if you would like to talk to us further reach out to the xView2 chat on [discord](https://xview2.org/contact).
+See the [xView2 FAQ](https://xview2.org/challenge) page first, if you would like to talk to us further reach out to the xView2 chat on [discord](https://xview2.org/chat).
 
