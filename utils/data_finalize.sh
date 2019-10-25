@@ -15,7 +15,6 @@
 # DM19-0988                                                                                                                                                         #
 #####################################################################################################################################################################
 
-
 set -euo pipefail
 
 # this function is called when Ctrl-C is sent
@@ -24,8 +23,8 @@ function trap_ctrlc ()
     # perform cleanup here
     echo "Ctrl-C or Error caught...performing clean up"
 
-    if [ -d /tmp/inference ]; then
-           rm -rf /tmp/inference
+    if [ -d "$input"/spacenet_gt ]; then
+           rm -rf "$input"/spacenet_gt
     fi
 
     exit 99
@@ -33,11 +32,17 @@ function trap_ctrlc ()
 
 # initialise trap to call trap_ctrlc function
 # when signal 2 (SIGINT) is received
-trap "trap_ctrlc" 2 9 13 3 17
+trap "trap_ctrlc" 2 9 13 3
 
 help_message () {
         printf "${0}: Moves files around for the spacenet model to train\n\t-i /path/to/xBD/ \n\t-s split percentage to go to train\n\t-x /path/to/xview-2/repository/\n\t(Note: this script expects mask_polygons.py to have ran first to create labels)\n\n"
 }
+
+# Checking for `bc` first (users reported that wasn't installed on some systems)
+if ! [ -x "$(command -v bc)" ]; then
+  echo 'Error: bc is not installed, please install before continuing.' >&2
+  exit 98
+fi
 
 if [ $# -lt 3 ]; then 
         help_message
