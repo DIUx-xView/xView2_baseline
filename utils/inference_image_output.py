@@ -37,7 +37,7 @@ def create_image(inference_data):
     :returns: an numpy array of 8-bit grey scale image with polygons filled in according to the key provided
     """
 
-    damage_key = {'no-damage': 1, 'minor-damage': 2, 'major-damage': 3, 'destroyed': 4}
+    damage_key = {'un-classified': 1, 'no-damage': 1, 'minor-damage': 2, 'major-damage': 3, 'destroyed': 4}
 
     mask_img = np.zeros((1024,1024,1), np.uint8)
 
