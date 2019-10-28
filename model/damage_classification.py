@@ -168,7 +168,7 @@ def train_model(train_data, train_csv, test_data, test_csv, model_in, model_out)
 
     
     #Filepath to save model weights
-    filepath = model_out + "-saved-model-{epoch:02d}-{acc:.2f}.hdf5"
+    filepath = model_out + "-saved-model-{epoch:02d}-{accuracy:.2f}.hdf5"
     checkpoints = keras.callbacks.ModelCheckpoint(filepath,
                                                     monitor=['loss', 'accuracy'],
                                                     verbose=1,
