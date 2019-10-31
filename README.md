@@ -79,6 +79,13 @@ xBD
  └── disaster_name_n
 ```
 
+You can do this with [`split_into_disasters.py`](./utils/split_into_disasters.py). This will take the location of your `train` directory and ask for an output directory to place each disaster with the subfolders `image/` and `label/`. 
+
+Example call: 
+
+`$ python split_into_disasters.py --input ~/Downloads/train/ --output ~/Downloads/xBD/`
+
+
 ## Baseline 
  
 We are using a fork of motokimura's [SpaceNet Building Detection](https://github.com/motokimura/spacenet_building_detection) for our localization in order to automatically pull our polygons to feed into our classifier. 
