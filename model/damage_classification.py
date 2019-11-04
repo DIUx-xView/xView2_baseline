@@ -179,7 +179,6 @@ def train_model(train_data, train_csv, test_data, test_csv, model_in, model_out)
     adam = keras.optimizers.Adam(lr=LEARNING_RATE,
                                     beta_1=0.9,
                                     beta_2=0.999,
-                                    epsilon=None,
                                     decay=0.0,
                                     amsgrad=False)
 
