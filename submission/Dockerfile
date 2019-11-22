@@ -48,13 +48,13 @@ RUN pip3 install matplotlib tqdm libtiff scipy Pillow scikit-image opencv-python
 RUN git clone https://github.com/DIUx-xView/xview2-baseline.git ~/code/xview-2
 
 # Grabbing weights for our models
-# UNCOMMENT THIS WHEN REPO/WEIGHTS ARE PUBLIC
 RUN curl -L https://github.com/DIUx-xView/xView2/releases/download/v1.0/localization.h5 -o ~/code/xview-2/weights/localization.h5
 RUN curl -L https://github.com/DIUx-xView/xView2/releases/download/v1.0/classification.hdf5 -o ~/code/xview-2/weights/classification.hdf5
 
 # Downloading ResNet and including it in the image
 RUN mkdir -p ~/.keras/models/ 
 
+ADD https://github.com/fchollet/deep-learning-models/releases/download/v0.2/resnet50_weights_tf_dim_ordering_tf_kernels.h5 ~/.keras/models/resnet50_weights_tf_dim_ordering_tf_kernels.h5 
 ADD https://github.com/fchollet/deep-learning-models/releases/download/v0.2/resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5 ~/.keras/models/resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5 
 
 # Finally running the container with the run.sh wrapper script to pass the CLI arguments to inference.sh
