@@ -1,4 +1,4 @@
-#!/bin/bash
+ #!/bin/bash
 
 #####################################################################################################################################################################
 # xView2                                                                                                                                                            #
@@ -15,13 +15,18 @@
 # DM19-0988                                                                                                                                                         #
 #####################################################################################################################################################################
 
-# Running inference using CLI arugments passed in 
-# 1) input pre image 
-# 2) input post image 
-# 3) output localization image 
-# 4) output localization+classifcation image
+# Running inference using CLI arguments passed in
+# 1) path to xview2-baseline 
+# 2) path to input pre image 
+# 3) path to input post image 
+# 4) path to output localization image 
+# 5) path to output localization+classification image
 
-/code/xview-2/utils/inference.sh -x /code/xview-2/ -i $1  -p $2 -o $3  -l /code/xview-2/weights/localization.h5 -c /code/xview-2/weights/classification.hdf5 -y
+if [ $# -lt 5 ]; then 
+        echo "run.sh: /path/to/xview2-baseline/ /path/to/input/pre/image /path/to/input/post/image /path/to/localization/output/image /path/to/classification/output/image" 
+else
+    "$1"/utils/inference.sh -x "$1" -i "$2"  -p "$3" -o "$4"  -l "$1"/weights/localization.h5 -c "$1"/weights/classification.hdf5 -y
 
-# The two images we will use for scoring will be identical so just copying the output localization path to the localization+classification path 
-cp $3 $4
+    # The two images we will use for scoring will be identical so just copying the output localization png to the classification path 
+    cp "$4" "$5"
+fi
