@@ -228,10 +228,12 @@ A sample call we used is below:
 
 #### Damage Classification Training
 
+**WARNING** If you have just ran the (or your own) localization model, be sure to clean up any localization specific directories (e.g. `./spacenet`) before running the classification pipeline. This will interfere with the damage classification training calls as they only expect the original data to exist in directories separated by disaster name. You can use the [`split_into_disasters.py`](./utils/split_into_disasters.py) program if you have a directory of ./images and ./labels that need to be separated into disasters.  
+
 The damage classification training processing and training code can be found under `/path/to/xView2/model/` 
 
 You will need to run the `process_data.py` python script to extract the polygon images used for training, testing, and holdout from the original satellite images and the polygon labels produced by SpaceNet. This will generate a csv file with polygon UUID and damage type
-as well as extracting the actual polygons from the original satellite images. If the `val_split_pct` is defined, then you will get two csvfiles, one for test and one for train. 
+as well as extracting the actual polygons from the original satellite images. If the `val_split_pct` is defined, then you will get two csv files, one for test and one for train. 
 
 **Note** The process_data script only extracts polygons from post disaster images
 
@@ -270,8 +272,8 @@ arguments:
  --model_out MODEL_WEIGHTS_OUT         Path to output weights (do not add file extention)
 ```
  
-Sample command: `$ python damage_classification.py --train_data /path/to/XBD/polygons/train 
---train_csv train.csv --test_data /path/to/XBD/polygons/test --test_csv test.csv --model_out path/to/xBD/baseline_trial --model_in /path/to/saved-model-01.hdf5`
+Sample command: `$ python damage_classification.py --train_data /path/to/XBD/$process_data_output_dir/train 
+--train_csv train.csv --test_data /path/to/XBD/$process_data_output_dir/test --test_csv test.csv --model_out path/to/xBD/baseline_trial --model_in /path/to/saved-model-01.hdf5`
 
 ### Inference 
 
@@ -287,7 +289,7 @@ To run the inference code you will need:
 4. Weights for the localization model
 5. Weights for the classification model 
 
-You can find the weights we have trained in the releases section of this Github repository.
+You can find the weights we have trained in the [releases section](https://github.com/DIUx-xView/xview2-baseline/releases/tag/v1.0) of this Github repository.
 
 As long as we can find the post image by replacing pre with post (`s/pre/post/g`) everything else should be run, this is used to dockerize the inference and run in parallel for each image individually based off the submission requirements of the challenge. 
 
