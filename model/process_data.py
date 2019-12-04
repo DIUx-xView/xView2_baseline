@@ -100,7 +100,7 @@ def process_data(input_path, output_path, output_csv_path, val_split_pct):
     x_data = []
     y_data = []
 
-    disasters = [folder for folder in os.listdir(input_path) if not folder.startswith('.') and ('midwest') not in folder]
+    disasters = [folder for folder in os.listdir(input_path) if not folder.startswith('.')]
     disaster_paths = ([input_path + "/" +  d + "/images" for d in disasters])
     image_paths = []
     image_paths.extend([(disaster_path + "/" + pic) for pic in os.listdir(disaster_path)] for disaster_path in disaster_paths)
