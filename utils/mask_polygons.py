@@ -228,7 +228,7 @@ if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(
         description=
-        """mask_polygons.py: Takes in xBD dataset and masks polygons in the image (make sure you've ran chip_masks.py first)\n\n
+        """mask_polygons.py: Takes in xBD dataset and masks polygons in the image\n\n
         WARNING: This could lead to hundreds of output images per input\n""")
 
     parser.add_argument('--input',
