@@ -108,7 +108,7 @@ def validation_generator(test_csv, test_dir):
     df = df.replace({"labels" : damage_intensity_encoding })
 
     gen = keras.preprocessing.image.ImageDataGenerator(
-                             rescale=1.4)
+                             rescale=1/255.)
 
 
     return gen.flow_from_dataframe(dataframe=df,
