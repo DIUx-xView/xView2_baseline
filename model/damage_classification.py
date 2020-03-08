@@ -132,7 +132,7 @@ def augment_data(df, in_dir):
                              vertical_flip=True,
                              width_shift_range=0.1,
                              height_shift_range=0.1,
-                             rescale=1.4)
+                             rescale=1/255.)
     return gen.flow_from_dataframe(dataframe=df,
                                    directory=in_dir,
                                    x_col='uuid',
