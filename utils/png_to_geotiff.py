@@ -15,14 +15,21 @@
 
 from osgeo import gdal
 from osgeo.gdalconst import *
+
+import json
 import numpy as np
 
-inDs = gdal.Open("hurricane-michael_00000204_post_disaster.png")
+
+geotransforms = json.load(open("xview_geotransforms.json", "r"))
+geomatrix = geotransforms["hurricane-michael_00000202_post_disaster.png"][0]
+projection = geotransforms["hurricane-michael_00000202_post_disaster.png"][1]
+
+inDs = gdal.Open("hurricane-michael_00000202_post_disaster.png")
 
 rows = inDs.RasterYSize
 cols = inDs.RasterXSize
 
-outDs = gdal.GetDriverByName('GTiff').Create("hurricane-michael_00000204_post_disaster.tif", rows, cols, 3, GDT_Int16)
+outDs = gdal.GetDriverByName('GTiff').Create("hurricane-michael_00000202_post_disaster.tif", rows, cols, 3, GDT_Int16)
 
 for i in range(1,4):
     outBand = outDs.GetRasterBand(i)
@@ -31,6 +38,6 @@ for i in range(1,4):
     outBand.FlushCache()
     outBand.SetNoDataValue(-99)
 
-outDs.SetGeoTransform([-85.64495705679415, 4.5238461666446155e-06, 0.0, 30.152997671158378, 0.0, -4.5238461666446155e-06])
-outDs.SetProjection("GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\",SPHEROID[\"WGS 84\",6378137,298.257223563,AUTHORITY[\"EPSG\",\"7030\"]],AUTHORITY[\"EPSG\",\"6326\"]],PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433],AUTHORITY[\"EPSG\",\"4326\"]]")
+outDs.SetGeoTransform(geomatrix)
+outDs.SetProjection(projection)
 
